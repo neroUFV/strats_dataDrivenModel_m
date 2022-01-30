@@ -1,16 +1,38 @@
 %% Experiment requires:
 % !Robots/robots_ardrone_m 
 % (Accessories and Tools)/tools_xboxJoystick_m
+% (Accessories and Tools)/tools_optitrack_m
+% Motive 2.1.1 or later versions + Optitrack Odometry System
 
 % Connects to robot, excites high-level commands and records output.
 % Adapted code from tools_xboxJoystick_m/Examples/Exp_JoyCtrl_VTOL.m
 
+% Recommended: comment A.rTakeOff, A.rSendControlSignals and A.rLand
+% in order to test the script on a DRY RUN.
+
 % !WARNING: turn ArDrone ON and connect this machine to it's Wi-Fi.
+
+%% Experiment script
+% TAKEOFF 3s
+% pulse A.pSC.U(3) =  1 (UP   for 60ms, 2 loops)
+% pulse A.pSC.U(3) =  0 (NO   for 60ms, 2 loops)
+% pulse A.pSC.U(3) = -1 (DOWN for 60ms, 2 loops)
+% pulse A.pSC.U(3) =  0 (NO   for 60ms, 2 loops)
+% pulse A.pSC.U(3) =  1 (UP   for 60ms, 2 loops)
+% pulse A.pSC.U(3) =  0 (NO   for 60ms, 2 loops)
+%_______________________________________________
+% Total> 360ms, 12 control loops + 3sec takeoff
+
 
 %% cleanup
 clearvars;close all;clc;
 
 %% startup
+% Create OptiTrack object and initialize virtual drone to get coordinates
+OPT = OptiTrack;
+OPT.Initialize;
+virtA = ArDrone;
+
 % Instatiate and connect to joystick and robot
 J = JoyControl;
 J.mConnect;
@@ -23,18 +45,34 @@ DESIRED = 2;
 state = 1;
 
 % Experiment variables
-XX = []; 
-tmax = 30;   % experiment time in seconds
+X_drone     = [];   % [x,y,z,phi,theta,psi] 12x1
+dX_drone    = [];   % [derivatives of X]    12x1
+X_opt       = []; 
+dX_opt      = [];
+controlSig  = [];   % A.pSC.U
+dControlSig = [];   % A.pSC.Ud
+TIME        = [];
+loopCount   = 0;
+tmax        = 0.36; % experiment time in seconds
 
 %% run 
-A.rTakeOff
+% A.rTakeOff
 pause(3) % take flight and hover for 3secs.
+
+% Get EXACT hover position just after takeoff (usually not 0)
+A.rGetSensorData
+startPos_drone = A.pPos.X;
+rb = OPT.RigidBody;
+virtA = getOptData(rb,virtA);
+startPos_opt = virtA.pPos.X;
 
 t = tic;
 tc = tic;
+NOW = toc(t);
 
-while toc(t) < tmax
-
+while NOW < tmax
+    NOW = toc(t);
+    
     % EMERGENCY LOOP-BREAKER 
     J.mRead; % Update joystick data
     if (J.pDigital(DESIRED) == state)
@@ -46,37 +84,57 @@ while toc(t) < tmax
     % COMMAND LOOP
     if toc(tc) > 1/30
         tc = tic;
+        loopCount = loopCount+1;
+
+        switch loopCount
+            case 1||2
+                A.pSC.U = [0 0 1 0];
+            
+            case 3||4
+                A.pSC.U = [0 0 0 0];
+
+            case 4||5
+                A.pSC.U = [0 0 -1 0];
+
+            case 5||7
+                A.pSC.U = [0 0 0 0];
+
+            case 8||9
+                A.pSC.U = [0 0 1 0];
+            
+            case 10||11
+                A.pSC.U = [0 0 0 0];
+
+            otherwise 
+                disp('control loop overflow')
+                break
+        end
 
         % Update and save flight data
         A.rGetSensorData
-        XX = [XX [A.pPos.Xd; A.pPos.X; tt]];
-        
+        rb = OPT.RigidBody;
+        virtA = getOptData(rb,virtA);
+
+        X_drone     = [X_drone, A.pPos.X];   
+        dX_drone    = [dX_drone, A.pPos.dX];  
+        X_opt       = [X_opt, virtA.pPos.X]; 
+        dX_opt      = [dX_opt, virtA.pPos.dX];
+        controlSig  = [controlSig, A.pSC.U];   
+        dControlSig = [dControlSig, A.pSC.Ud];   
+        TIME        = [TIME, NOW];
+
+        % TODO prealocate matrices
+
+%         A.rSendControlSignals
     end
-
-
 end
 
 % Land and close connection
-A.rLand
+% A.rLand
 A.rDisconnect
 
-%% Plot results
-figure(1)
-subplot(211),plot(XX(end,:),XX([4 16],:)'*180/pi)
-legend('\phi_{Des}','\phi_{Atu}')
-grid
-subplot(212),plot(XX(end,:),XX([5 17],:)'*180/pi)
-legend('\theta_{Des}','\theta_{Atu}')
-grid
-
-figure(2)
-plot(XX([1,13],:)',XX([2,14],:)')
-axis equal
-
-figure(3)
-subplot(211),plot(XX(end,:),XX([1 13],:)')
-legend('x_{Des}','x_{Atu}')
-grid
-subplot(212),plot(XX(end,:),XX([2 14],:)')
-legend('y_{Des}','y_{Atu}')
-grid
+%% Save results
+exp = datestr(now);
+exp([3,7,12,15,18]) = '_';
+exp = ['(Strategies and Solutions)\strats_dataDrivenModel_m\data\','teste',exp,'.mat'];
+save(exp)
