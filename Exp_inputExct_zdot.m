@@ -21,7 +21,10 @@
 % pulse A.pSC.U(3) =  1 (UP   for 60ms, 2 loops)
 % pulse A.pSC.U(3) =  0 (NO   for 60ms, 2 loops)
 %_______________________________________________
-% Total> 360ms, 12 control loops + 3sec takeoff
+% Total> 360ms, 12 control loops + 5sec takeoff
+% -> this was too fast!
+
+
 
 
 %% cleanup
@@ -53,11 +56,11 @@ controlSig  = [];   % A.pSC.U
 dControlSig = [];   % A.pSC.Ud
 TIME        = [];
 loopCount   = 0;
-tmax        = 0.36; % experiment time in seconds
+tmax        = 60; % experiment time in seconds
 
 %% run 
-% A.rTakeOff
-pause(3) % take flight and hover for 3secs.
+A.rTakeOff
+pause(10) % take flight and hover for 5secs.
 
 % Get EXACT hover position just after takeoff (usually not 0)
 A.rGetSensorData
@@ -66,9 +69,11 @@ rb = OPT.RigidBody;
 virtA = getOptData(rb,virtA);
 startPos_opt = virtA.pPos.X;
 
+disp('STARTING EXPERIMENT')
 t = tic;
 tc = tic;
 NOW = toc(t);
+last = NOW;
 
 while NOW < tmax
     NOW = toc(t);
@@ -83,31 +88,32 @@ while NOW < tmax
 
     % COMMAND LOOP
     if toc(tc) > 1/30
+        
         tc = tic;
-        loopCount = loopCount+1;
+
+        if last-NOW+1 <= 0  % each loopCount now takes 1s
+            loopCount = loopCount+1;
+            last = NOW;
+        end
 
         switch loopCount
             case 1||2
-                A.pSC.U = [0 0 1 0];
+                A.pSC.U = [0 0 1 0]';
             
             case 3||4
-                A.pSC.U = [0 0 0 0];
+                A.pSC.U = [0 0 0 0]';
 
             case 4||5
-                A.pSC.U = [0 0 -1 0];
+                A.pSC.U = [0 0 -1 0]';
 
             case 5||7
-                A.pSC.U = [0 0 0 0];
+                A.pSC.U = [0 0 0 0]';
 
             case 8||9
-                A.pSC.U = [0 0 1 0];
+                A.pSC.U = [0 0 1 0]';
             
             case 10||11
-                A.pSC.U = [0 0 0 0];
-
-            otherwise 
-                disp('control loop overflow')
-                break
+                A.pSC.U = [0 0 0 0]';
         end
 
         % Update and save flight data
@@ -125,12 +131,12 @@ while NOW < tmax
 
         % TODO prealocate matrices
 
-%         A.rSendControlSignals
+        A.rSendControlSignals
     end
 end
 
 % Land and close connection
-% A.rLand
+A.rLand
 A.rDisconnect
 
 %% Save results
