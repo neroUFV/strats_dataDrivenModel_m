@@ -91,28 +91,38 @@ while NOW < tmax
         
         tc = tic;
 
-        if NOW<= tmax*(2/12)
+        if NOW<= tmax*(1/12)
             A.pSC.Ud = [0 0 1 0]';
         end
 
-        if NOW>= tmax*(2/12) && NOW<= tmax*(4/12)
-            A.pSC.Ud = [0 0 0 0]';
-        end
-
-        if NOW>= tmax*(4/12) && NOW<= tmax*(6/12)
-            A.pSC.Ud = [0 0 -1 0]';
-        end
-
-        if NOW>= tmax*(6/12) && NOW<= tmax*(8/12)
-            A.pSC.Ud = [0 0 0 0]';
-        end
-
-        if NOW>= tmax*(8/12) && NOW<= tmax*(10/12)
+        if NOW>= tmax*(1/12) && NOW<= tmax*(/12)
             A.pSC.Ud = [0 0 1 0]';
         end
 
-        if NOW>= tmax*(10/12) && NOW<= tmax
-            A.pSC.Ud = [0 0 0 0]';
+        if last-NOW+1 <= 0  % each loopCount now takes 1s
+            loopCount = loopCount+1;
+            last = NOW;
+            disp(loopCount)
+        end
+
+        switch loopCount
+            case 1||2
+                A.pSC.Ud = [0 0 1 0]';
+            
+            case 3||4
+                A.pSC.Ud = [0 0 0 0]';
+
+            case 4||5
+                A.pSC.Ud = [0 0 -1 0]';
+
+            case 5||7
+                A.pSC.Ud = [0 0 0 0]';
+
+            case 8||9
+                A.pSC.Ud = [0 0 1 0]';
+            
+            case 10||11
+                A.pSC.Ud = [0 0 0 0]';
         end
 
         % Update and save flight data
@@ -120,7 +130,6 @@ while NOW < tmax
         rb = OPT.RigidBody;
         virtA = getOptData(rb,virtA);
 
-        % TODO prealocate matrices
         X_drone     = [X_drone, A.pPos.X];   
         dX_drone    = [dX_drone, A.pPos.dX];  
         X_opt       = [X_opt, virtA.pPos.X]; 
@@ -128,7 +137,9 @@ while NOW < tmax
         controlSig  = [controlSig, A.pSC.U];   
         dControlSig = [dControlSig, A.pSC.Ud];   
         TIME        = [TIME, NOW];
-        
+
+        % TODO prealocate matrices
+
         A.rSendControlSignals
     end
 end
