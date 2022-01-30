@@ -14,18 +14,14 @@
 
 %% Experiment script
 % TAKEOFF 3s
-% pulse A.pSC.U(3) =  1 (UP   for 60ms, 2 loops)
-% pulse A.pSC.U(3) =  0 (NO   for 60ms, 2 loops)
-% pulse A.pSC.U(3) = -1 (DOWN for 60ms, 2 loops)
-% pulse A.pSC.U(3) =  0 (NO   for 60ms, 2 loops)
-% pulse A.pSC.U(3) =  1 (UP   for 60ms, 2 loops)
-% pulse A.pSC.U(3) =  0 (NO   for 60ms, 2 loops)
+% pulse A.pSC.U(3) =  1 (UP   for ~67ms, ~2 loops)
+% pulse A.pSC.U(3) =  0 (NO   for ~67ms, ~2 loops)
+% pulse A.pSC.U(3) = -1 (DOWN for ~67ms, ~2 loops)
+% pulse A.pSC.U(3) =  0 (NO   for ~67ms, ~2 loops)
+% pulse A.pSC.U(3) =  1 (UP   for ~67ms, ~2 loops)
+% pulse A.pSC.U(3) =  0 (NO   for ~67ms, ~2 loops)
 %_______________________________________________
-% Total> 360ms, 12 control loops + 5sec takeoff
-% -> this was too fast!
-
-
-
+% Total> 12 control loops + 5sec takeoff
 
 %% cleanup
 clearvars;close all;clc;
@@ -56,7 +52,7 @@ controlSig  = [];   % A.pSC.U
 dControlSig = [];   % A.pSC.Ud
 TIME        = [];
 loopCount   = 0;
-tmax        = 18; % experiment time in seconds
+tmax        = 8; % experiment time in seconds
 
 %% run 
 A.rTakeOff
@@ -73,7 +69,6 @@ disp('STARTING EXPERIMENT')
 t = tic;
 tc = tic;
 NOW = toc(t);
-last = NOW;
 
 while NOW < tmax
     NOW = toc(t);
@@ -92,27 +87,39 @@ while NOW < tmax
         tc = tic;
 
         if NOW<= tmax*(2/12)
-            A.pSC.Ud = [0 0 1 0]';
+            A.pSC.Ud = [0 0 1/2 0]';
+            disp('Input:')
+            disp(A.pSC.Ud)
         end
 
         if NOW>= tmax*(2/12) && NOW<= tmax*(4/12)
             A.pSC.Ud = [0 0 0 0]';
+            disp('Input:')
+            disp(A.pSC.Ud)
         end
 
         if NOW>= tmax*(4/12) && NOW<= tmax*(6/12)
-            A.pSC.Ud = [0 0 -1 0]';
+            A.pSC.Ud = [0 0 -1/2 0]';
+            disp('Input:')
+            disp(A.pSC.Ud)
         end
 
         if NOW>= tmax*(6/12) && NOW<= tmax*(8/12)
             A.pSC.Ud = [0 0 0 0]';
+            disp('Input:')
+            disp(A.pSC.Ud)
         end
 
         if NOW>= tmax*(8/12) && NOW<= tmax*(10/12)
-            A.pSC.Ud = [0 0 1 0]';
+            A.pSC.Ud = [0 0 1/2 0]';
+            disp('Input:')
+            disp(A.pSC.Ud)
         end
 
         if NOW>= tmax*(10/12) && NOW<= tmax
             A.pSC.Ud = [0 0 0 0]';
+            disp('Input:')
+            disp(A.pSC.Ud)
         end
 
         % Update and save flight data
