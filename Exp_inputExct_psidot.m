@@ -21,7 +21,7 @@
 % pulse A.pSC.U(3) =  1 (UP   for ~67ms, ~2 loops)
 % pulse A.pSC.U(3) =  0 (NO   for ~67ms, ~2 loops)
 %_______________________________________________
-% Total> 12 control loops + 5sec takeoff
+% Total> 12 control loops + 10sec takeoff
 
 %% cleanup
 clearvars;close all;clc;
@@ -57,7 +57,7 @@ SIG         = 8/10;  % control signal input
 
 %% run 
 A.rTakeOff
-pause(10) % take flight and hover for 5secs.
+pause(10) % take flight and hover for 10secs.
 
 % Get EXACT hover position just after takeoff (usually not 0)
 A.rGetSensorData
@@ -90,7 +90,7 @@ while NOW < tmax
         tc = tic;
 
         if NOW<= tmax*(2/12)
-            A.pSC.Ud = [0 0 SIG 0]';
+            A.pSC.Ud = [0 0 0 SIG]';
             disp('Input:')
             disp(A.pSC.Ud)
         end
@@ -102,7 +102,7 @@ while NOW < tmax
         end
 
         if NOW>= tmax*(4/12) && NOW<= tmax*(6/12)
-            A.pSC.Ud = [0 0 -SIG 0]';
+            A.pSC.Ud = [0 0 0 -SIG]';
             disp('Input:')
             disp(A.pSC.Ud)
         end
@@ -114,7 +114,7 @@ while NOW < tmax
         end
 
         if NOW>= tmax*(8/12) && NOW<= tmax*(10/12)
-            A.pSC.Ud = [0 0 SIG 0]';
+            A.pSC.Ud = [0 0 0 SIG]';
             disp('Input:')
             disp(A.pSC.Ud)
         end
@@ -151,5 +151,5 @@ A.rDisconnect
 robo = 'LARANJA';
 exp = datestr(now);
 exp([3,7,12,15,18]) = '_';
-exp = ['(Strategies and Solutions)\strats_dataDrivenModel_m\data\','ZDOT_',exp,'_',robo,'.mat'];
+exp = ['(Strategies and Solutions)\strats_dataDrivenModel_m\data\','PSIDOT_',exp,'_',robo,'.mat'];
 save(exp)
