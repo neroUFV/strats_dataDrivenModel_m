@@ -71,8 +71,7 @@ tc = tic;
 NOW = toc(t);
 
 while NOW < tmax
-    NOW = toc(t);
-    
+
     % EMERGENCY LOOP-BREAKER 
     J.mRead; % Update joystick data
     if (J.pDigital(DESIRED) == state)
@@ -80,6 +79,9 @@ while NOW < tmax
         break
         % stop experiment if DESIRED button is pressed.
     end
+
+    % UPDATE EXP TIME
+    NOW = toc(t);
 
     % COMMAND LOOP
     if toc(tc) > 1/30
@@ -147,5 +149,5 @@ A.rDisconnect
 %% Save results
 exp = datestr(now);
 exp([3,7,12,15,18]) = '_';
-exp = ['(Strategies and Solutions)\strats_dataDrivenModel_m\data\','teste',exp,'.mat'];
+exp = ['(Strategies and Solutions)\strats_dataDrivenModel_m\data\','ZDOT_',exp,'.mat'];
 save(exp)
