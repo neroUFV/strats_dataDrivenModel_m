@@ -1,0 +1,60 @@
+%% Selects, reads and plots info from strats_dataDrivenModel_m experiments 
+% 
+clearvars;close all;clc;
+
+try
+    disp('Select a COMPLETED experiment:')
+    file = uigetfile('*.mat');
+    brokenStr = split(file,'_');
+    if 
+    load(file)
+    expType = extractBefore(file,'_');
+    
+    
+catch
+    disp('No file selected!')
+    expType = 'NONE';
+end
+
+
+if strcmp(expType,'PHI')
+    plot(TIME, dControlSig(1,:))
+    grid on
+    ylim([-0.21,0.21])
+    hold on
+    plot(TIME, X_opt(4,:))
+    xlabel('Time [s]')
+    ylabel('\phi [ -- ]')
+    title('\phi')
+end
+% plot(TIME, dControlSig(1,:))
+% grid on
+% ylim([-0.21,0.21])
+% hold on
+% plot(TIME, X_opt(4,:))
+% xlabel('Time [s]')
+% ylabel('\phi [ -- ]')
+% title('\phi')]
+
+% plot(TIME, dControlSig(2,:))
+% grid on
+% ylim([-0.21,0.21])
+% hold on
+% plot(TIME, X_opt(5,:))
+% xlabel('Time [s]')
+% ylabel('\theta [ -- ]')
+% title('\theta')
+
+% plot(TIME, dControlSig(3,:))
+% grid on
+% ylim([-1,1])
+% hold on
+% plot(TIME(1,2:end), diff(X_opt(3,:)))
+% xlabel('Time [s]')
+
+% plot(TIME, dControlSig(4,:))
+% grid on
+% ylim([-1,1])
+% hold on
+% plot(TIME(1,2:end), diff(X_opt(6,:)))
+% xlabel('Time [s]')
