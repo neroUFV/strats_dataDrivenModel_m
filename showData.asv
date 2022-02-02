@@ -5,18 +5,27 @@ clearvars;close all;clc;
 try
     disp('Select a COMPLETED experiment:')
     file = uigetfile('*.mat');
-    brokenStr = split(file,'_');
-    if 
-    load(file)
-    expType = extractBefore(file,'_');
     
+    if contains(file,'COMPLETO')
+        expType = extractBefore(file,'_');
+        load(file,'TIME','dControlSig','X_opt','X_drone')
+    else
+        disp('Incomplete experiment chosen.')
+        error('')
+    end
     
-catch
-    disp('No file selected!')
-    expType = 'NONE';
+
+
+%% Display 
+
+% Approximate and filter derivatives (velocities)
+for ii = 7:12
+   nElem = 3;
+   Tclock = 1/3;
+   disp(ii-6)
+   X_opt(ii,:) = [X_opt(ii,1),filter(ones(1,nElem),nElem,diff(X_opt(ii-6,:))./Tclock)];
 end
-
-
+        
 if strcmp(expType,'PHI')
     plot(TIME, dControlSig(1,:))
     grid on
@@ -27,34 +36,104 @@ if strcmp(expType,'PHI')
     ylabel('\phi [ -- ]')
     title('\phi')
 end
-% plot(TIME, dControlSig(1,:))
-% grid on
-% ylim([-0.21,0.21])
-% hold on
-% plot(TIME, X_opt(4,:))
-% xlabel('Time [s]')
-% ylabel('\phi [ -- ]')
-% title('\phi')]
 
-% plot(TIME, dControlSig(2,:))
-% grid on
-% ylim([-0.21,0.21])
-% hold on
-% plot(TIME, X_opt(5,:))
-% xlabel('Time [s]')
-% ylabel('\theta [ -- ]')
-% title('\theta')
+if strcmp(expType,'THETA')
+    plot(TIME, dControlSig(2,:))
+    grid on
+    ylim([-0.21,0.21])
+    hold on
+    plot(TIME, X_opt(5,:))
+    xlabel('Time [s]')
+    ylabel('\theta [ -- ]')
+    title('\theta')
+end
 
-% plot(TIME, dControlSig(3,:))
-% grid on
-% ylim([-1,1])
-% hold on
-% plot(TIME(1,2:end), diff(X_opt(3,:)))
-% xlabel('Time [s]')
+if strcmp(expType,'ZDOT')
+    figure(1)
+    plot(TIME, dControlSig(3,:))
+    grid on
+    ylim([-1,1])
+    hold on
+    plot(TIME, X_opt(9,:))
+    xlabel('Time [s]')
+    
+end
 
-% plot(TIME, dControlSig(4,:))
-% grid on
-% ylim([-1,1])
-% hold on
-% plot(TIME(1,2:end), diff(X_opt(6,:)))
-% xlabel('Time [s]')
+if strcmp(expType,'PSIDOT')
+    plot(TIME, dControlSig(4,:))
+    grid on
+    ylim([-1,1])
+    hold on
+    d1 = designfilt('lowpassiir','FilterOrder',12, ...
+    'HalfPowerFrequency',0.15,'DesignMethod','butter');
+    plot(TIME(1,2:end), filtfilt(d1,diff(X_opt(6,:))./diff(TIME)))
+    xlabel('Time [s]')
+end
+
+%% Displays x,y,z,phi,theta,psi
+
+figure(2)
+
+subplot(321)
+plot(TIME, X_opt(1,:))
+ylabel('x')
+
+subplot(323)
+plot(TIME, X_opt(2,:))
+ylabel('y')
+
+subplot(325)
+plot(TIME, X_opt(3,:))
+ylabel('z')
+xlabel('t [s]')
+
+subplot(322)
+title('X')
+plot(TIME, X_opt(4,:))
+ylabel('\phi')
+
+subplot(324)
+plot(TIME, X_opt(5,:))
+ylabel('\theta')
+
+subplot(326)
+plot(TIME, X_opt(6,:))
+ylabel('\psi')
+xlabel('t [s]')
+
+%% Displays dx,dy,dz,dphi,dtheta,dpsi
+
+figure(3)
+title('dX')
+subplot(321)
+plot(TIME, X_opt(7,:))
+ylabel('dx')
+
+subplot(323)
+plot(TIME, X_opt(8,:))
+ylabel('dy')
+
+subplot(325)
+plot(TIME, X_opt(9,:))
+ylabel('dz')
+xlabel('t [s]')
+
+subplot(322)
+title('dX')
+plot(TIME, X_opt(10,:))
+ylabel('d\phi')
+
+subplot(324)
+plot(TIME, X_opt(11,:))
+ylabel('d\theta')
+
+subplot(326)
+plot(TIME, X_opt(12,:))
+ylabel('d\psi')
+xlabel('t [s]')
+
+catch
+    disp('No file selected!')
+    expType = 'NONE';
+end
+    
