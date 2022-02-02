@@ -90,37 +90,37 @@ while NOW < tmax
         tc = tic;
 
         if NOW<= tmax*(2/12)
-            A.pSC.Ud = [SIG 0 0 0]';
+            A.pSC.Ud = [0 SIG 0 0]';
             disp('Input:')
             disp(A.pSC.Ud)
         end
 
         if NOW>= tmax*(2/12) && NOW<= tmax*(4/12)
-            A.pSC.Ud = [-1.2*SIG 0 0 0]';
+            A.pSC.Ud = [0 -1.2*SIG 0 0]';
             disp('Input:')
             disp(A.pSC.Ud)
         end
 
         if NOW>= tmax*(4/12) && NOW<= tmax*(6/12)
-            A.pSC.Ud = [1.4*SIG 0 0 0]';
+            A.pSC.Ud = [0 1.4*SIG 0 0]';
             disp('Input:')
             disp(A.pSC.Ud)
         end
 
         if NOW>= tmax*(6/12) && NOW<= tmax*(8/12)
-            A.pSC.Ud = [-1.6*SIG 0 0 0]';
+            A.pSC.Ud = [0 -1.6*SIG 0 0]';
             disp('Input:')
             disp(A.pSC.Ud)
         end
 
         if NOW>= tmax*(8/12) && NOW<= tmax*(10/12)
-            A.pSC.Ud = [1.8*SIG 0 0 0]';
+            A.pSC.Ud = [0 1.8*SIG 0 0]';
             disp('Input:')
             disp(A.pSC.Ud)
         end
 
         if NOW>= tmax*(10/12) && NOW<= tmax
-            A.pSC.Ud = [-2*SIG 0 0 0]';
+            A.pSC.Ud = [0 -2*SIG 0 0]';
             disp('Input:')
             disp(A.pSC.Ud)
         end
@@ -151,5 +151,5 @@ A.rDisconnect
 robo = 'LARANJA';
 exp = datestr(now);
 exp([3,7,12,15,18]) = '_';
-exp = ['(Strategies and Solutions)\strats_dataDrivenModel_m\data\','PHI_',exp,'_',robo,'.mat'];
+exp = ['(Strategies and Solutions)\strats_dataDrivenModel_m\data\','THETA_',exp,'_',robo,'.mat'];
 save(exp)
